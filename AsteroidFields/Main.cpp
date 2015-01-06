@@ -48,8 +48,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	/////////////////////////////////////////////////
 	//DIRECTX INITS
 	/////////////////////////////////////////////////
-
 	//initialize DirectInput
+	if (!Init_Graphics(hWnd)){
+		MessageBox(hWnd, "Error initializing Direct3d", "Error", MB_OK);
+		return 0;
+	}
 	if (!Init_DirectInput(hWnd))
 	{
 		MessageBox(hWnd, "Error initializing DirectInput", "Error", MB_OK);

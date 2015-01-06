@@ -1,6 +1,6 @@
 #include "dxGraphics.h"
 
-Graphics::Graphics(HWND hwnd, bool fs)//Constructor
+bool Init_Graphics(HWND hwnd, bool fs)//Constructor
 {
 	GetClientRect(hwnd, &screenresolution);
 	hWnd = hwnd;
@@ -10,11 +10,13 @@ Graphics::Graphics(HWND hwnd, bool fs)//Constructor
 	if (d3d == NULL)
 	{
 		MessageBox(hWnd, "Error initializing Direct3D", "Constructor error", MB_OK);
+		return 0;
 	}
 	SetMode(screenresolution.right, screenresolution.bottom, fs);
+	return 1;
 }
 
-bool Graphics::SetMode(int x, int y, bool fs){
+bool SetMode(int x, int y, bool fs){
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
 	d3dpp.Windowed = !fs;
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
@@ -46,11 +48,11 @@ bool Graphics::SetMode(int x, int y, bool fs){
 	return 1;
 }
 
-RECT Graphics::GetMode(){
+RECT GetMode(){
 	return screenresolution;
 }
 
-void Graphics::Clear(DWORD color)
+void Clear(DWORD color)
 {
 	int a, r, g, b;
 	r = color >> 16 & 0xff;
@@ -71,7 +73,7 @@ void Graphics::Clear(DWORD color)
 	d3ddev->Present(NULL, NULL, NULL, NULL);
 }
 
-void Graphics::DrawImage(char const* pathInParam, int x, int y, float scale){
+void DrawImage(char const* pathInParam, int x, int y, float scale){
 	RECT pos;//Position rect
 	LPDIRECT3DSURFACE9 img;
 	D3DXIMAGE_INFO img_info;
@@ -103,7 +105,7 @@ void Graphics::DrawImage(char const* pathInParam, int x, int y, float scale){
 	d3ddev->Present(NULL, NULL, NULL, NULL);//display the back buffer on the screen (nullparameters are bout swapchains and window handling)
 }
 
-void Graphics::DrawText(char const* text, int textSize, int x, int y, DWORD color){
+void DrawText(char const* text, int textSize, int x, int y, DWORD color){
 	HRESULT result;
 	HDC hdc = GetDC(0); // hämta skärmens DC
 	int logicalHeight = -MulDiv(textSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
@@ -156,7 +158,7 @@ Sprite creation works this way:
 *move the sprite on the screen.
 These should be supported by the class SpriteState.
 121*/
-void Graphics::DrawSprite(LPDIRECT3DTEXTURE9 sprite[], int x, int y, int currentframe, LPDIRECT3DSURFACE9 back){
+void DrawSprite(LPDIRECT3DTEXTURE9 sprite[], int x, int y, int currentframe, LPDIRECT3DSURFACE9 back){
 	//start rendering
 	if (d3ddev->BeginScene())
 	{
@@ -185,7 +187,7 @@ void Graphics::DrawSprite(LPDIRECT3DTEXTURE9 sprite[], int x, int y, int current
 	d3ddev->Present(NULL, NULL, NULL, NULL);
 }
 
-void Graphics::DrawSprites(LPDIRECT3DTEXTURE9 sprite_array[], Sprite sprite_info[], int sprites, int currentframe, LPDIRECT3DSURFACE9 back){
+void DrawSprites(LPDIRECT3DTEXTURE9 sprite_array[], Sprite sprite_info[], int sprites, int currentframe, LPDIRECT3DSURFACE9 back){
 	//start rendering
 	if (d3ddev->BeginScene())
 	{
@@ -223,7 +225,7 @@ Requires parameters:
 int Width, Height
 char const* Path
 */
-LPDIRECT3DSURFACE9 Graphics::LoadSurface(char const* pathInParam, D3DCOLOR transcolor)
+LPDIRECT3DSURFACE9 LoadSurface(char const* pathInParam, D3DCOLOR transcolor)
 {
 	LPDIRECT3DSURFACE9 image = NULL;
 	D3DXIMAGE_INFO info;
@@ -262,7 +264,7 @@ LPDIRECT3DSURFACE9 Graphics::LoadSurface(char const* pathInParam, D3DCOLOR trans
 	return image;
 }
 
-LPDIRECT3DTEXTURE9 Graphics::LoadTexture(char *filename, D3DCOLOR transcolor){
+LPDIRECT3DTEXTURE9 LoadTexture(char *filename, D3DCOLOR transcolor){
 	LPDIRECT3DTEXTURE9 texture = NULL;//Texture for foreground objects
 
 	//the struct for reading bitmap file info
@@ -304,7 +306,7 @@ LPDIRECT3DTEXTURE9 Graphics::LoadTexture(char *filename, D3DCOLOR transcolor){
 Sprite setup
 Transparency color is pink.
 */
-bool Graphics::Sprite_setup(LPDIRECT3DTEXTURE9 sprite_array[], char const *filename, int arraySize){
+bool Sprite_setup(LPDIRECT3DTEXTURE9 sprite_array[], char const *filename, int arraySize){
 	char s[20];
 	int n;
 
@@ -326,12 +328,11 @@ bool Graphics::Sprite_setup(LPDIRECT3DTEXTURE9 sprite_array[], char const *filen
 			MessageBox(hWnd, "Sprite setup failed.", "Array sprite error", MB_OK);
 			return 0;
 		}
-
 	}
 	return 1;
 }
 
-Graphics::~Graphics(){
+~Graphics(){
 	d3d->Release();
 	d3ddev->Release();
 	if (sprite_handler != NULL){
